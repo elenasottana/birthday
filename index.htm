@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Auguri!!!</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Code+Pro">
+    <style>
+        body {
+            font-family: 'Source Code Pro', serif;
+            background: #000;
+            color: #fff;
+        }
+        h1 {
+            margin-top: 30px;
+        }
+        #video, #dont-wanna-know, #want-to-know {
+            margin: 50px 0;
+        }
+        #poll ul li {
+            border-radius: 5px;
+            border: 3px solid #fff;
+            padding: 5px 20px;
+            margin: 20px 0;
+        }
+        #me {
+            margin: 50px 0;
+        }
+        #me > b {
+            font-size: 120%;
+            text-transform: uppercase;
+        }
+        .res-question {
+            font-size: 110%;
+            margin: 20px auto 15px;
+        }
+        .res-comment {
+            font-size: 110%;
+        }
+        .res-icon {
+            color: yellow;
+            font-size: 150%;
+            margin-bottom: 50px;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="text-center">Tantissimi auguri Elena!</h1>
+    <div class="grid text-center">
+        <div id="video">
+            <video controls>
+                <source src="auguri.mp4" type="video/mp4">
+            </video>
+            <div>
+                <p>...vuoi sapere chi sono?</p>
+                <button id="know-me-no" type="button" class="btn btn-danger">No</button>
+                <button id="know-me-yes" type="button" class="btn btn-success">Si</button>
+            </div>
+        </div>
+    </div>
+    <div class="container text-center">
+        <div class="row justify-content-center">
+            <div id="dont-wanna-know" class="col align-self-center d-none">
+                <h2 class="lead text-center">Che stronzaaaaaaa!</h2>
+                <button type="button" class="gohome btn btn-primary">Indietro</button>
+            </div>
+            <div id="want-to-know" class="col align-self-center d-none">
+                <div id="intro" class="grid text-center">
+                    <p>
+                        Ora ti faccio qualche domanda e se azzecchi le risposte ti dico chi sono
+                    </p>
+                    <button id="start" type="button" class="btn btn-primary">Comincia</button>
+                    <button type="button" class="gohome btn btn-primary">Indietro</button>
+                </div>
+                <div id="poll" class="grid text-center d-none">
+                    <h5></h5>
+                    <ul class="list-unstyled">
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                    </ul>
+                </div>
+                <div id="results" class="grid text-center d-none">
+                    <h5 class="fs-1"></h5>
+                    <ul class="list-unstyled"></ul>
+                    <p id="me" class="d-none fs-1">Instagram<br /><b>@roberto.**********</b></p>
+                    <button id="restart" type="button" class="btn btn-primary">Riprova</button>
+                    <button type="button" class="gohome btn btn-primary">Inizio</button>
+                </div>
+            </div>
+        </div>
+    </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
+<script>
+    class Page {
+        constructor( anchors, index ) {
+            this.anchors = anchors || [];
+            this.index = index;
+        }
+        goTo( index ) {
+            this.index = index;
+            this.refresh();
+        }
+        refresh() {
+            for( var i in this.anchors ) {
+                var element = this.anchors[i];
+                if ( i == this.index ) {
+                    element.classList.remove("d-none");
+                } else {
+                    element.classList.add("d-none");
+                }
+            }
+        }
+    }
+    class Poll {
+        constructor( element, questions, callback ) {
+            this.element = element;
+            this.questions = questions;
+            this.index = 1;
+            this.callback = callback;
+            this.answers = [];
+            this.init();
+        }
+
+        init() {
+            var pm = this;
+            this.element.querySelectorAll( 'li' ).forEach(function(node, index) {
+                node.addEventListener( 'click', function(e) {
+                    pm.addAnswer( index );
+                    if ( pm.hasMore() ) {
+                        pm.next();
+                    } else {
+                        pm.callback();
+                    }
+                });
+            });
+        }
+        addAnswer( value ) {
+            this.answers.push( parseInt( value ) );
+        }
+        hasMore() {
+            return this.index < this.questions.length;
+        }
+        next() {
+            this.index++;
+            this.refreshQuestion();
+        }
+        reset() {
+            this.answers = [];
+            this.index = 1;
+            this.refreshQuestion();
+        }
+        refreshQuestion() {
+            var question = this.getCurrentQuestion();
+            var title = this.element.querySelector( 'h5' );
+            title.innerHTML = question.text;
+            for(var i in question.answers ) {
+                var answer = question.answers[ i ];
+                var listItem = this.element.querySelectorAll( 'li' ).item(i);
+                listItem.innerHTML = answer.text;
+            }
+
+        }
+        getCurrentQuestion() {
+            return this.questions[this.index-1];;
+        }
+    };
+    var questions = [
+        {
+            text: 'Il vino lo preferisci',
+            correct: 3,
+            answers: [
+                {
+                    text: 'Rosso',
+                    reaction: 'Sbagliato!',
+                    icon: 'bi-emoji-frown-fill'
+                },
+                {
+                    text: 'Bianco bollicine',
+                    reaction: 'No, gonfia troppo!',
+                    icon: 'bi-emoji-frown-fill'
+                },
+                {
+                    text: 'Bianco fermo',
+                    reaction: '"Fermissimo" per la precisione!',
+                    icon: 'bi-emoji-sunglasses-fill'
+                }
+            ]
+        },
+        {
+            text: 'I tuoi vestiti sono',
+            correct: 3,
+            answers: [
+                {
+                    text: 'Colorati',
+                    reaction: 'Sicuramente, ma c\'è una definizione migliore!',
+                    icon: 'bi-emoji-wink-fill'
+                },
+                {
+                    text: 'Succinti',
+                    reaction: 'Impossibile... mai vista con un vestito succinto, ma se ce l\'hai lo voglio vedere!',
+                    icon: 'bi-emoji-laughing-fill'
+                },
+                {
+                    text: 'Un po\' retrò',
+                    reaction: 'Non ti arrabbiare, ma mi piace essere onesto!',
+                    icon: 'bi-emoji-smile-fill'
+                }
+            ]
+        },
+        {
+            text: 'La tua parte migliore è',
+            correct: 2,
+            answers: [
+                {
+                    text: 'Seno',
+                    reaction: 'Senza dubbio bellissimo, ma c\'è di meglio!',
+                    icon: 'bi-emoji-heart-eyes-fill'
+                },
+                {
+                    text: 'Viso',
+                    reaction: 'Eh si... infatti penso che staresti meglio con i capelli corti o raccolti!',
+                    icon: 'bi-emoji-wink-fill'
+                },
+                {
+                    text: 'Sedere',
+                    reaction: 'Non sono mai riuscito a vederlo, avevi sempre vestiti lunghi!',
+                    icon: 'bi-emoji-expressionless-fill'
+                }
+            ]
+        },
+        {
+            text: 'Il fidanzato è meglio',
+            correct: 1,
+            answers: [
+                {
+                    text: 'Più giovane',
+                    reaction: '...ovvio, così posso andare bene!!!',
+                    icon: 'bi-emoji-heart-eyes-fill'
+                },
+                {
+                    text: 'Più vecchio',
+                    reaction: 'Ma no... sei fuori moda!',
+                    icon: 'bi-emoji-frown-fill'
+                },
+                {
+                    text: 'Non averlo',
+                    reaction: 'Hai appena reso tristi un sacco di ragazzi',
+                    icon: 'bi-emoji-frown-fill'
+                }
+            ]
+        },
+        {
+            text: 'Mi piaci perchè',
+            correct: 3,
+            answers: [
+                {
+                    text: 'Sorridi sempre',
+                    reaction: 'Magari... dovresti farlo di più!',
+                    icon: 'bi-emoji-wink-fill'
+                },
+                {
+                    text: 'Hai classe',
+                    reaction: 'Ne hai anche, ma non è quello!',
+                    icon: 'bi-emoji-neutral-fill'
+                },
+                {
+                    text: 'Sei silenziosa',
+                    reaction: 'Non parli molto se non conosci qualcuno... Ma sarei curioso di sapere cos\'hai da dire!',
+                    icon: 'bi-emoji-heart-eyes-fill'
+                }
+            ]
+        },
+        {
+            text: 'Sono probabilmente...',
+            correct: 2,
+            answers: [
+                {
+                    text: 'un NERD asociale',
+                    reaction: '...ah, grazie!',
+                    icon: 'bi-emoji-angry-fill'
+                },
+                {
+                    text: 'un NERD simpatico',
+                    reaction: 'Bravissimaaaaaa!',
+                    icon: 'bi-emoji-wink-fill'
+                },
+                {
+                    text: 'uno uscito dal cottolengo',
+                    reaction: 'Meno male che non vedo le risposte',
+                    icon: 'bi-emoji-neutral-fill'
+                }
+            ]
+        }
+    ];
+    (function() {
+        var showResults = function() {
+            var pollContainer = document.getElementById('poll');
+            var resContainer = document.getElementById('results');
+            var choice = document.getElementById('choice');
+            var comment = document.getElementById('comment');
+            var account = document.getElementById('me');
+            var correct = 0;
+            var html = '';
+
+            pollContainer.classList.add("d-none");
+            resContainer.classList.remove("d-none");
+
+            for( var i in pollManager.answers ) {
+                var question = pollManager.questions[i];
+                var index = pollManager.answers[i];
+                var value = question.answers[index];
+                var cssClass = '';
+                if ( index == ( question.correct - 1 ) ) {
+                    correct++;
+                    cssClass = 'text-success';
+                } else {
+                    cssClass = 'text-danger';
+                }
+                html += '<li class="res-question"><b>' + question.text + '</b></li> \
+							<li class="res-choice text-default">' + value.text + '</li> \
+							<li class="res-comment ' + cssClass + '">' + value.reaction + '</li> \
+							<li class="res-icon"><i class="bi  ' + value.icon + '"></i></li>';
+            }
+            if ( correct === pollManager.questions.length ) {
+                resContainer.querySelector( 'h5' ).innerHTML = "Test superato!!!";
+                resContainer.querySelector( 'h5' ).classList.remove("text-warning");
+                resContainer.querySelector( 'h5' ).classList.add("text-success");
+                account.classList.remove("d-none");
+            } else {
+                account.classList.add("d-none");
+                var errors = pollManager.questions.length - correct;
+                resContainer.querySelector( 'h5' ).innerHTML = 'Hai sbagliato ' + errors + ' risposte';
+                resContainer.querySelector( 'h5' ).classList.remove("text-success");
+                resContainer.querySelector( 'h5' ).classList.add("text-warning");
+            }
+            resContainer.querySelector( 'ul' ).innerHTML = html;
+        };
+        var anchors = {
+            'dont-wanna-know': document.getElementById('dont-wanna-know'),
+            'want-to-know': document.getElementById('want-to-know'),
+            'video': document.getElementById('video')
+        };
+        var poll = document.getElementById('poll');
+        var pageManager = new Page( anchors );
+        var pollManager = null;
+        document.getElementById('know-me-no').addEventListener( 'click', function(e) {
+            pageManager.goTo( 'dont-wanna-know' );
+        });
+        document.getElementById('know-me-yes').addEventListener( 'click', function(e) {
+            pageManager.goTo( 'want-to-know' );
+            document.getElementById('results').classList.add("d-none");
+            document.getElementById('intro').classList.remove("d-none");
+            poll.classList.add("d-none");
+        });
+        document.getElementById('start').addEventListener( 'click', function(e) {
+            document.getElementById('results').classList.add("d-none");
+            document.getElementById('intro').classList.add("d-none");
+            poll.classList.remove("d-none");
+            if ( pollManager === null ) {
+                pollManager = new Poll( poll, questions, showResults );
+            }
+            pollManager.reset();
+            pollManager.refreshQuestion();
+        });
+        document.getElementById('restart').addEventListener( 'click', function(e) {
+            pageManager.goTo( 'want-to-know' );
+            document.getElementById('results').classList.add("d-none");
+            document.getElementById('intro').classList.add("d-none");
+            poll.classList.remove("d-none");
+            pollManager.reset();
+            pollManager.refreshQuestion();
+        });
+        document.querySelectorAll('.gohome').forEach(function(node, index) {
+            node.addEventListener( 'click', function(e) {
+                pageManager.goTo( 'video' );
+            });
+        });
+    })();
+</script>
+</body>
+</html>
